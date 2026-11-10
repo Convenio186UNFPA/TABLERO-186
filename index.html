@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Convenio de Cooperación Mutua F.S.B N° 186 de 2025 · UNFPA – MIE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>tailwind.config={theme:{extend:{colors:{o:'#F16122',b:'#2475EE',g:'#a2a2a2'}}}}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:#fff;color:#475569;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.card{background:#fff;border:1px solid #eef0f4;border-radius:22px;box-shadow:0 10px 30px -18px rgba(36,117,238,.35);transition:.25s}
+.hv:hover{transform:translateY(-3px);box-shadow:0 16px 36px -16px rgba(241,97,34,.45)}
+button{-webkit-tap-highlight-color:transparent}
+.chip{background:#EAF1FE;color:#2475EE;font-weight:800;border-radius:99px;padding:4px 12px;font-size:13px}
+.tbn{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;color:#a2a2a2}.tbn:hover{background:#FEF0E9;color:#F16122}
+.bar{height:8px;border-radius:9px;background:#EEF0F3;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#F9C9B0,#F16122);border-radius:9px}
+.bar.bl i{background:linear-gradient(90deg,#BFD6F8,#2475EE)}
+.pill{display:inline-block;font-size:12px;font-weight:800;padding:2px 10px;border-radius:99px;background:#FEF0E9;color:#F16122}
+.pill.b{background:#EAF1FE;color:#2475EE}
+#modal{position:fixed;inset:0;background:rgba(30,41,59,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
+#modal.on{display:flex}
+#mbox{background:#fff;border-radius:26px;max-width:720px;width:100%;max-height:88vh;overflow:auto;padding:24px;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+.ring{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:22px;color:#F16122}
+.ring span{background:#fff;width:74px;height:74px;border-radius:50%;display:grid;place-items:center}
+.sl img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1s}.sl img.on{opacity:1}
+nav::-webkit-scrollbar{display:none}
+input,select{font-size:16px}
+</style>
+</head>
+<body>
+
+<header class="max-w-7xl mx-auto px-4 pt-5">
+  <div class="flex flex-col md:flex-row md:items-center gap-5">
+    <img src="logo.jpg" alt="Logo" class="h-24 sm:h-28 md:h-36 w-auto object-contain self-start">
+    <div class="flex-1">
+      <h1 class="text-2xl md:text-4xl font-black text-o leading-tight">Convenio de Cooperación Mutua F.S.B N° 186 de 2025</h1>
+      <p class="mt-2 text-base md:text-xl font-bold text-o/90 leading-snug">Fondo de Población de las Naciones Unidas (UNFPA) y el Viceministerio de las Juventudes del Ministerio de Igualdad y Equidad (MIE)</p>
+    </div>
+  </div>
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <label class="inline-flex items-center gap-2 bg-o text-white font-extrabold rounded-full px-5 py-2.5 cursor-pointer hover:opacity-90 shadow-lg shadow-o/30">
+      <i data-lucide="upload"></i> Cargar archivo Excel
+      <input id="file" type="file" accept=".xlsx,.xls" class="hidden">
+    </label>
+    <span id="st" class="text-sm font-bold text-g"></span>
+  </div>
+</header>
+
+<nav id="nav" class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-100 mt-4" style="padding-top:env(safe-area-inset-top)">
+  <div id="navin" class="max-w-7xl mx-auto px-4 py-2 flex gap-2 overflow-x-auto"></div>
+</nav>
+
+<main id="view" class="max-w-7xl mx-auto px-4 pb-16"></main>
+<footer class="text-center text-sm text-g pb-10 px-4">Fuente de datos: tablero.xlsx · UNFPA – Viceministerio de las Juventudes (MIE)</footer>
+<div id="modal"><div id="mbox"></div></div>
+
+<script>
+/* ===== utilidades ===== */
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P=['#F9C9B0','#B9D3F7','#CFE3C4','#F6E3A9','#D5CDEB','#BFE3E0','#F3C4D3','#DCDCDC','#E9D4BD','#C3D0E8','#E4E9B8','#F2D7EE'];
+const HV=['#F1A27C','#7FAEF2','#9CC989','#EBC95F','#A99BD6','#86C9C3','#E78FAB','#A2A2A2','#CFAE86','#8CA2CF','#C2CC7C','#DDA6D2'];
+const nf=n=>Number(n).toLocaleString('es-CO',{maximumFractionDigits:1}),pc=(a,b)=>b?Math.round(a/b*100):0;
+const cl=s=>String(s??'').trim().replace(/\.$/,'');
+const tc=s=>String(s).replace(/, COLOMBIA$/,'').trim().toLowerCase().replace(/(^|[\s(])\S/g,m=>m.toUpperCase()).replace(/ (De|Del|La|Y) /g,m=>m.toLowerCase()).replace('D.c.','D.C.');
+const eth=s=>/^negro/i.test(s)?'Afrodescendiente':cl(s);
+const bin=(n,b)=>{n=+n;if(!n)return'';for(const[x,l]of b)if(n<=x)return l;return''};
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const ok=v=>/^(totalmente )?de acuerdo/i.test(String(v).trim());
+const SECS=[['inicio','Inicio','layout-dashboard'],['marco','Marco de Resultados','target'],['asamblea','Asamblea Nacional','users-round'],['grad','Curso Virtual','graduation-cap'],['enl','Enlaces Municipales','laptop'],['pos','Posesión CNJ','landmark']];
+const TY=['bar','hbar','doughnut','pie'];
+let DB=null,F={},TYPE={},INST=[],KD=[],POST=[],QL=[],SP={},sec='inicio',AS={k:'t',s:'',o:'t',q:'',m:''},TM=null,SL=0;
+const ic=()=>window.lucide&&lucide.createIcons();
+Chart.defaults.font.family='Nunito';Chart.defaults.color='#64748b';
+Chart.register({id:'bg',beforeDraw(c){const x=c.ctx;x.save();x.globalCompositeOperation='destination-over';x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.restore()}});
+
+/* ===== carga de datos ===== */
+const body=a=>a.slice(1).filter(r=>r.some(c=>c!==''));
+function sheet(wb,k){const n=wb.SheetNames.find(x=>x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(k));return n?XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:true}):[1]}
+function load(buf,name){
+  const wb=XLSX.read(buf,{type:'array'}),seen=new Set(),mr=sheet(wb,'marco'),gr=sheet(wb,'graduados'),po=sheet(wb,'posesion');
+  DB={
+    m:body(mr).filter(r=>r[2]!==''&&!seen.has(r[2])&&seen.add(r[2])).map(r=>({n:r[2],c:cl(r[0]),r:cl(r[1]),i:String(r[3]).trim(),t:cl(r[4]),d:String(r[5]).trim(),f:String(r[6]).trim(),m:+r[7]||0,a:+r[8]||0})),
+    a:body(sheet(wb,'asamblea')).map(r=>({d:tc(r[0]),v:[1,2,3,4,5,6].map(i=>+r[i]||0),t:+r[7]||0})),
+    g:{h:gr[0],r:body(gr)},
+    e:body(sheet(wb,'enlaces')).map(r=>[tc(r[0]),tc(r[1]),+r[2]||0,r[3],r[4],eth(r[5]),cl(r[6]),String(r[7]).replace(/^No\s*(\d)\.?\s*-\s*/i,'Taller N° $1 · ').trim()]),
+    p:{h:po[0],r:body(po)}
+  };
+  F={};mkSpecs();$('#st').textContent='✔ Datos cargados: '+name;render();
+}
+async function boot(){try{const r=await fetch('tablero.xlsx?'+Date.now());if(!r.ok)throw 0;load(await r.arrayBuffer(),'tablero.xlsx')}catch(e){render()}}
+$('#file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{try{load(fr.result,f.name)}catch(x){alert('No se pudo leer el archivo: '+x.message)}};fr.readAsArrayBuffer(f)});
+
+/* ===== especificaciones de gráficos (filtrables) ===== */
+const LK=['Totalmente de acuerdo','De acuerdo','Ni de acuerdo ni en desacuerdo','Poco de acuerdo','No estoy de acuerdo'];
+function mkSpecs(){
+  const g=DB.g.h,p=DB.p.h,fl=(idx,L,y)=>r=>idx.filter(i=>y(r[i])).map(i=>L[i]);
+  const gl={},pl={};for(let i=10;i<=22;i++)gl[i]=cl(g[i]);for(let i=9;i<=43;i++)pl[i]=cl(p[i]).replace(/^[A-C]\.\s*/,'');
+  const yes=v=>String(v).toUpperCase().startsWith('S'),ra=[[17,'≤17'],[24,'18–24'],[29,'25–29'],[39,'30–39'],[49,'40–49'],[999,'50+']],rp=[[19,'17–19'],[22,'20–22'],[25,'23–25'],[28,'26–28'],[999,'29+']];
+  const rpl=(i0,i1)=>Array.from({length:i1-i0+1},(_,k)=>i0+k);
+  SP.mr=[
+    {id:'cp',t:'Componentes',type:'bar',get:r=>r.c.split(':')[0]+': '+(r.c.split(':')[1]||'').trim()},
+    {id:'tp',t:'Tipo de indicador',type:'doughnut',get:r=>r.t},
+    {id:'rs',t:'Resultados',type:'hbar',get:r=>r.r.split(':')[0]}];
+  SP.grad=[
+    {id:'sx',t:'Sexo',type:'doughnut',get:r=>r[2]},{id:'gn',t:'Identidad de género',type:'pie',get:r=>r[3]},
+    {id:'ed',t:'Rango de edad',type:'bar',get:r=>r[0],ord:['14 a 17 años','18 a 21 años','22 a 24 años','25 a 28 años']},
+    {id:'et',t:'Pertenencia étnica',type:'pie',get:r=>eth(r[4])},{id:'df',t:'Diversidad funcional',type:'doughnut',get:r=>r[5]},
+    {id:'ar',t:'Área de residencia',type:'pie',get:r=>r[8]},{id:'nv',t:'Nivel educativo',type:'hbar',get:r=>r[9]},
+    {id:'dp',t:'Departamentos (Top 12)',type:'hbar',top:12,get:r=>tc(r[6])},
+    {id:'og',t:'Procesos y espacios de procedencia',type:'hbar',get:fl(rpl(10,22),gl,v=>+v==1)}];
+  SP.enl=[
+    {id:'sx',t:'Sexo',type:'doughnut',get:r=>r[3]},{id:'ed',t:'Rango de edad',type:'bar',get:r=>bin(r[2],ra),ord:ra.map(x=>x[1])},
+    {id:'et',t:'Grupo étnico',type:'pie',get:r=>r[5]},{id:'df',t:'Diversidad funcional',type:'doughnut',get:r=>r[6]},
+    {id:'tl',t:'Participación por taller',type:'doughnut',get:r=>r[7]},{id:'dp',t:'Departamentos',type:'hbar',top:12,get:r=>r[0]}];
+  SP.pos=[
+    {id:'sx',t:'Sexo',type:'doughnut',get:r=>r[5]},{id:'ed',t:'Rango de edad',type:'bar',get:r=>bin(r[3],rp),ord:rp.map(x=>x[1])},
+    {id:'et',t:'Pertenencia étnica',type:'pie',get:r=>eth(r[7])},{id:'dp',t:'Departamentos',type:'hbar',top:12,get:r=>tc(r[0])},
+    {id:'kp',t:'Conocimiento previo del CNJ',type:'bar',get:r=>cl(r[25]),ord:['Muy bajo','Bajo','Medio','Alto']},
+    {id:'ap',t:'Aporte esperado del espacio',type:'hbar',get:fl(rpl(9,13),pl,yes)},
+    {id:'te',t:'Temas que esperaban fortalecer',type:'hbar',get:fl(rpl(15,24),pl,yes)},
+    {id:'as',t:'Aspectos que más aportaron',type:'hbar',get:fl(rpl(29,34),pl,yes)},
+    {id:'cf',t:'Conocimientos fortalecidos',type:'hbar',get:fl(rpl(36,43),pl,yes)}];
+}
+const fr=(sc,rows)=>{const f=F[sc]||{},k=Object.keys(f);return k.length?rows.filter(r=>k.every(i=>[].concat(SP[sc].find(s=>s.id==i).get(r)).includes(f[i]))):rows};
+const count=(rows,s)=>{const m=new Map();rows.forEach(r=>[].concat(s.get(r)).forEach(k=>{if(k!=null&&k!=='')m.set(k,(m.get(k)||0)+1)}));let a=[...m];a.sort(s.ord?(x,y)=>s.ord.indexOf(x[0])-s.ord.indexOf(y[0]):(x,y)=>y[1]-x[1]);return s.top?a.slice(0,s.top):a};
+
+/* ===== gráficos ===== */
+const base=(type)=>({responsive:true,maintainAspectRatio:false,animation:{duration:700},plugins:{legend:{display:type=='pie'||type=='doughnut',position:'bottom',labels:{boxWidth:12,usePointStyle:true,font:{weight:'700'}}},tooltip:{backgroundColor:'#1e293b',padding:10,cornerRadius:10}},onHover:(e,a)=>{e.native.target.style.cursor=a.length?'pointer':'default'}});
+function draw(sc,sp,rows){
+  const id=sc+'_'+sp.id,cv=$('#c_'+id);if(!cv)return;const a=count(rows,sp),labels=a.map(x=>x[0]),data=a.map(x=>x[1]),tot=avg(data)*data.length,sel=(F[sc]||{})[sp.id],ty=TYPE[id]||sp.type,pie=ty=='pie'||ty=='doughnut';
+  const bg=labels.map((l,i)=>sel&&l!==sel?'#EEF0F3':P[i%P.length]),hv=labels.map((l,i)=>HV[i%HV.length]);
+  const o=base(ty);o.indexAxis=ty=='hbar'?'y':'x';
+  o.plugins.tooltip.callbacks={label:c=>` ${c.label}: ${nf(c.raw)} (${pc(c.raw,tot)}%)`};
+  if(!pie)o.scales={x:{grid:{display:false},ticks:{font:{weight:'700'}}},y:{grid:{color:'#f1f5f9'},beginAtZero:true,ticks:{precision:0,font:{weight:'700'}}}};
+  o.onClick=(e,el)=>{if(el.length){const l=labels[el[0].index];F[sc]=F[sc]||{};F[sc][sp.id]===l?delete F[sc][sp.id]:F[sc][sp.id]=l;render(true)}};
+  INST.push(new Chart(cv,{type:ty=='hbar'?'bar':ty,data:{labels,datasets:[{data,backgroundColor:bg,hoverBackgroundColor:hv,borderColor:pie?'#fff':hv,borderWidth:pie?3:1.5,borderRadius:pie?0:8,hoverOffset:pie?10:0}]},options:o}));
+}
+function bars(id,labels,sets,max,horiz=true,stack=false){
+  const cv=$('#c_'+id);if(!cv)return;const o=base('bar');o.indexAxis=horiz?'y':'x';o.plugins.legend={display:sets.length>1,position:'bottom',labels:{boxWidth:12,usePointStyle:true,font:{weight:'700'}}};
+  o.scales={[horiz?'x':'y']:{min:0,max,stacked:stack,grid:{color:'#f1f5f9'},ticks:{font:{weight:'700'}}},[horiz?'y':'x']:{stacked:stack,grid:{display:false},ticks:{font:{weight:'700'}}}};
+  o.plugins.tooltip.callbacks={label:c=>` ${c.dataset.label}: ${nf(c.raw)}`};
+  INST.push(new Chart(cv,{type:'bar',data:{labels,datasets:sets.map(s=>({label:s.l,data:s.d,backgroundColor:s.c,hoverBackgroundColor:s.h,borderRadius:8}))},options:o}));
+}
+const tb=(i,t,a,id)=>`<button class="tbn" title="${t}" data-a="${a}" data-id="${id}"><i data-lucide="${i}" class="w-4 h-4"></i></button>`;
+const cc=(id,t,h='h-64',filt=true,note='')=>`<div class="card p-4 md:p-5"><div class="flex items-center justify-between gap-2 mb-2"><h3 class="font-extrabold text-slate-800">${t}</h3><div class="flex">${filt?tb('repeat','Cambiar tipo de gráfico','ty',id):''}${tb('download','Descargar PNG','dl',id)}</div></div><div class="${h} relative"><canvas id="c_${id}"></canvas></div>${note}</div>`;
+const grid=(sc,rows,ids)=>ids.map(i=>{const s=SP[sc].find(x=>x.id==i);POST.push(()=>draw(sc,s,rows));return cc(sc+'_'+i,s.t,s.type=='hbar'?(count(rows,s).length>7?'h-80':'h-64'):'h-64')}).join('');
+
+/* ===== componentes ===== */
+const kp=(ico,l,v,s,d,c='o')=>{KD.push({l,v,d});return `<button data-k="${KD.length-1}" class="card hv p-4 text-left w-full"><div class="flex items-center justify-between"><span class="w-10 h-10 rounded-2xl grid place-items-center ${c=='o'?'bg-o/10 text-o':'bg-b/10 text-b'}"><i data-lucide="${ico}" class="w-5 h-5"></i></span><i data-lucide="maximize-2" class="w-4 h-4 text-g"></i></div><div class="mt-3 text-3xl font-black ${c=='o'?'text-o':'text-b'}">${v}</div><div class="font-extrabold text-slate-700 leading-tight">${l}</div><div class="text-xs text-g font-semibold mt-0.5">${s||''}</div></button>`};
+const ib=(t,h,ico='lightbulb')=>`<div class="card p-5 border-l-4 border-l-b"><div class="flex items-center gap-2 font-extrabold text-b mb-2"><i data-lucide="${ico}" class="w-5 h-5"></i>${t}</div><div class="text-[15px] leading-relaxed text-slate-600">${h}</div></div>`;
+const hd=(t,n,sub)=>`<section class="relative overflow-hidden rounded-3xl mt-6 card"><img src="foto${n}.jpg" alt="" onerror="this.remove()" class="absolute inset-0 w-full h-full object-cover"><div class="relative p-6 md:p-10 bg-gradient-to-r from-white via-white/90 to-white/20"><h2 class="text-2xl md:text-4xl font-black text-b max-w-3xl leading-tight">${t}</h2><p class="mt-2 font-semibold text-slate-500 max-w-2xl">${sub}</p></div></section>`;
+const chips=sc=>{const f=F[sc]||{},k=Object.keys(f);return k.length?`<div class="flex flex-wrap items-center gap-2 mt-5"><span class="text-sm font-extrabold text-g">Filtros activos:</span>${k.map(i=>`<button data-a="rm" data-id="${i}" class="chip">${esc(SP[sc].find(s=>s.id==i).t)}: ${esc(f[i])} ✕</button>`).join('')}<button data-a="clr" class="text-sm font-extrabold text-o underline">Limpiar</button></div>`:`<p class="mt-5 text-sm text-g font-semibold flex items-center gap-2"><i data-lucide="mouse-pointer-click" class="w-4 h-4"></i>Haz clic en cualquier gráfico para filtrar todo el tablero · Usa los íconos para cambiar el tipo o descargar</p>`};
+const sh=(t,ic2)=>`<h3 class="mt-9 mb-3 text-xl font-black text-slate-800 flex items-center gap-2"><i data-lucide="${ic2}" class="w-5 h-5 text-o"></i>${t}</h3>`;
+const openM=h=>{$('#mbox').innerHTML=`<div class="flex justify-end -mt-2 -mr-2"><button data-a="x" class="tbn"><i data-lucide="x" class="w-5 h-5"></i></button></div>${h}`;$('#modal').classList.add('on');ic()};
+const vf=(v,m)=>m&&m<1?Math.round(v*100)+'%':nf(v);
+
+/* ===== secciones ===== */
+function inicio(){
+  const M=DB.m,cum=Math.round(avg(M.map(x=>Math.min(x.a/(x.m||1),1)))*100),tot=DB.a.reduce((s,x)=>s+x.t,0);
+  const c=(s,ico,v,l,sub)=>`<button data-s="${s}" class="card hv p-5 text-left"><span class="w-11 h-11 rounded-2xl bg-b/10 text-b grid place-items-center"><i data-lucide="${ico}"></i></span><div class="mt-3 text-4xl font-black text-o">${v}</div><div class="font-extrabold text-slate-800">${l}</div><div class="text-sm text-g font-semibold">${sub}</div></button>`;
+  POST.push(()=>{SL=0;const im=[...document.querySelectorAll('.sl img')],dt=[...document.querySelectorAll('.dt')],go=i=>{SL=(i+im.length)%im.length;im.forEach((x,k)=>x.classList.toggle('on',k==SL));dt.forEach((x,k)=>x.style.background=k==SL?'#F16122':'#fff')};window.goSl=go;go(0);TM=setInterval(()=>go(SL+1),5000)});
+  return `<section class="mt-6 relative rounded-3xl overflow-hidden card"><div class="sl relative h-64 sm:h-80 md:h-[420px] bg-gradient-to-br from-o/20 to-b/20">${[1,2,3,4,5].map(n=>`<img src="foto${n}.jpg" alt="Juventudes ${n}" onerror="this.remove()">`).join('')}</div><div class="absolute left-3 right-3 bottom-3 md:left-8 md:bottom-8 md:right-auto md:max-w-xl bg-white/92 backdrop-blur rounded-2xl p-4 md:p-6 shadow-xl"><h2 class="text-xl md:text-3xl font-black text-b leading-tight">Juventudes que participan, deciden y transforman</h2><p class="text-sm md:text-base font-semibold text-slate-500 mt-1">Seguimiento integral del convenio: resultados, participación, formación y percepciones.</p></div><div class="absolute top-3 right-3 flex gap-1.5">${[0,1,2,3,4].map(i=>`<button class="dt w-3 h-3 rounded-full border border-o" onclick="goSl(${i})" aria-label="Foto ${i+1}"></button>`).join('')}</div></section>
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-6">${c('marco','target',cum+'%','Cumplimiento promedio',M.length+' indicadores')}${c('asamblea','users-round',nf(tot),'Participantes en la Asamblea','Bucaramanga 2025')}${c('grad','graduation-cap',nf(DB.g.r.length),'Jóvenes en el curso virtual','Con diagnóstico inicial y final')}${c('enl','laptop',nf(DB.e.length),'Registros de enlaces','Talleres virtuales')}${c('pos','landmark',DB.p.r.length,'Consejeros(as) encuestados','Posesión CNJ 2026')}</div>
+  ${sh('Galería de juventudes','images')}<div class="grid grid-cols-2 md:grid-cols-5 gap-3">${[1,2,3,4,5].map(n=>`<button data-a="ph" data-id="${n}" class="card hv overflow-hidden aspect-square bg-gradient-to-br from-o/15 to-b/15"><img src="foto${n}.jpg" alt="" class="w-full h-full object-cover" onerror="this.remove()"></button>`).join('')}</div>`;
+}
+
+function marco(){
+  const all=DB.m,R=fr('mr',all),done=R.filter(x=>x.a>=x.m).length,av=Math.round(avg(R.map(x=>Math.min(x.a/(x.m||1),1)))*100),cps=[...new Set(all.map(x=>x.c))];
+  POST.push(()=>{SP.mr.forEach(s=>draw('mr',s,R));const cs=[...new Set(R.map(x=>x.c))];bars('mr_av',cs.map(c=>c.split(':')[0]),[{l:'Cumplimiento (%)',d:cs.map(c=>Math.round(avg(R.filter(x=>x.c==c).map(x=>Math.min(x.a/(x.m||1),1)))*100)),c:P[1],h:HV[1]}],100,false)});
+  const rn=[...new Set(R.map(x=>x.r))].sort().map(x=>`<li><b class="text-o">${esc(x.split(':')[0])}</b> ${esc(x.split(':').slice(1).join(':').trim())}</li>`).join('');
+  return hd('Indicadores Marco de Resultados Convenio N°186 de 2025',1,'Seguimiento de metas y avances por componente, resultado y tipo de indicador.')+chips('mr')+
+  `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">${kp('list-checks','Indicadores',R.length,'del marco de resultados','Total de indicadores únicos del marco de resultados (cada N° se cuenta una sola vez).')}${kp('circle-check','Metas cumplidas',done,pc(done,R.length)+'% de los indicadores','Indicadores cuyo avance alcanza o supera la meta final.','b')}${kp('trending-up','Cumplimiento promedio',av+'%','avance ÷ meta','Promedio del cumplimiento de cada indicador (avance/meta, máximo 100%).')}${kp('loader','En ejecución',R.length-done,'por debajo de la meta','Indicadores con avance inferior a la meta final.','b')}</div>
+  ${sh('Visión general','chart-pie')}<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">${cc('mr_cp','Indicadores por componente','h-72')}${cc('mr_tp','Tipo de indicador')}${cc('mr_av','Cumplimiento promedio por componente (%)','h-72',false)}${cc('mr_rs','Indicadores por resultado','h-72',true,`<ul class="mt-3 text-xs leading-snug space-y-1 text-slate-500">${rn}</ul>`)}</div>
+  ${sh('Detalle de indicadores','table-properties')}<div class="card p-4"><div class="relative mb-3"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-3.5 text-g"></i><input id="ms" value="${esc(AS.m)}" placeholder="Buscar indicador…" class="w-full border border-slate-200 rounded-2xl pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-b/40"></div><div id="ml" class="divide-y divide-slate-100 max-h-[560px] overflow-y-auto">${mlist()}</div></div>`;
+}
+function mlist(){const q=AS.m.toLowerCase(),R=fr('mr',DB.m).filter(x=>!q||(x.i+x.n+x.c+x.r).toLowerCase().includes(q));return R.map(x=>{const p=Math.min(Math.round(x.a/(x.m||1)*100),100);return `<button data-m="m:${x.n}" class="w-full text-left py-3 px-1 hover:bg-b/5 rounded-xl flex gap-3 items-center"><span class="shrink-0 w-10 h-10 rounded-xl bg-o/10 text-o font-black grid place-items-center">${x.n}</span><span class="flex-1 min-w-0"><span class="block font-bold text-slate-700 text-sm line-clamp-2">${esc(x.i)}</span><span class="flex items-center gap-2 mt-1.5"><span class="bar flex-1 ${p>=100?'':'bl'}"><i style="width:${p}%"></i></span><span class="text-xs font-extrabold text-slate-500 whitespace-nowrap">${vf(x.a,x.m)} / ${vf(x.m,x.m)}</span></span></span></button>`}).join('')||'<p class="p-4 text-g">Sin resultados.</p>'}
+function mModal(n){const x=DB.m.find(y=>y.n==n),p=Math.min(Math.round(x.a/(x.m||1)*100),100);openM(`<div class="flex gap-4 items-center"><div class="ring" style="background:conic-gradient(#F16122 ${p*3.6}deg,#EEF0F3 0)"><span>${p}%</span></div><div><div class="text-sm font-extrabold text-g">Indicador N° ${x.n}</div><div class="mt-1"><span class="pill">${esc(x.t)}</span> <span class="pill b">${esc(x.r.split(':')[0])}</span></div><div class="text-sm font-bold text-slate-600 mt-1">Meta: ${vf(x.m,x.m)} · Avance: ${vf(x.a,x.m)}</div></div></div><h3 class="mt-4 text-lg font-black text-b leading-snug">${esc(x.i)}</h3><div class="mt-3 text-xs font-extrabold text-g uppercase">Componente · Resultado</div><p class="text-sm">${esc(x.c)} — ${esc(x.r)}</p>${x.d?`<div class="mt-3 text-xs font-extrabold text-g uppercase">Descripción</div><p class="text-sm leading-relaxed">${esc(x.d)}</p>`:''}${x.f?`<div class="mt-3 text-xs font-extrabold text-g uppercase">Fórmula de cálculo</div><p class="text-sm leading-relaxed whitespace-pre-line bg-slate-50 rounded-xl p-3">${esc(x.f)}</p>`:''}`)}
+
+const AK=[['t','Total'],[0,'Mujeres'],[1,'Hombres'],[2,'Afrodescendientes'],[3,'Indígenas'],[4,'Con discapacidad'],[5,'LGBTIQ+']];
+const val=(x,k)=>k=='t'?x.t:x.v[k];
+function asamblea(){
+  const A=DB.a,tot=A.reduce((s,x)=>s+x.t,0),sm=i=>A.reduce((s,x)=>s+x.v[i],0),deps=A.filter(x=>!/nacional/i.test(x.d)),k=AS.k,kn=AK.find(a=>a[0]==k)[1];
+  const rk=[...deps].sort((a,b)=>val(b,k)-val(a,k)).slice(0,15),top=[...deps].sort((a,b)=>b.t-a.t)[0];
+  POST.push(()=>{const cv=$('#c_as_cp');if(cv){const o=base('doughnut');o.plugins.tooltip.callbacks={label:c=>` ${c.label}: ${nf(c.raw)} (${pc(c.raw,avg(c.dataset.data)*c.dataset.data.length)}%)`};INST.push(new Chart(cv,{type:'doughnut',data:{labels:AK.slice(1).map(a=>a[1]),datasets:[{data:[0,1,2,3,4,5].map(sm),backgroundColor:P,hoverBackgroundColor:HV,borderColor:'#fff',borderWidth:3,hoverOffset:10}]},options:o}))}
+    const c2=$('#c_as_rk');if(c2){const o=base('bar');o.indexAxis='y';o.plugins.legend={display:false};o.scales={x:{grid:{color:'#f1f5f9'},ticks:{font:{weight:'700'}}},y:{grid:{display:false},ticks:{font:{weight:'700'}}}};o.onClick=(e,el)=>{if(el.length)aModal(rk[el[0].index].d)};INST.push(new Chart(c2,{type:'bar',data:{labels:rk.map(x=>x.d),datasets:[{label:kn,data:rk.map(x=>val(x,k)),backgroundColor:rk.map((_,i)=>P[i%P.length]),hoverBackgroundColor:rk.map((_,i)=>HV[i%HV.length]),borderRadius:8}]},options:o}))}});
+  return hd('Participación – Asamblea Nacional de Juventudes 2025',2,'Participación por departamento, sexo y enfoques diferenciales.')+
+  `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">${kp('users','Participantes',nf(tot),'total registrado','Suma del total de participantes de todos los departamentos y de la categoría nacional.')}${kp('map-pin','Departamentos',deps.length,'con participación','Departamentos y distrito capital con participantes registrados (sin contar la categoría Nacional).','b')}${kp('venus','Mujeres',pc(sm(0),tot)+'%',nf(sm(0))+' personas','Participantes mujeres en relación con el total.')}${kp('heart-handshake','Enfoque étnico',nf(sm(2)+sm(3)),'afro + indígenas','Afrodescendientes: '+nf(sm(2))+' · Indígenas: '+nf(sm(3)),'b')}</div>
+  <div class="grid grid-cols-2 gap-4 mt-4">${kp('rainbow','LGBTIQ+',nf(sm(5)),pc(sm(5),tot)+'% del total','Participantes que se identifican como LGBTIQ+.')}${kp('accessibility','Con discapacidad',nf(sm(4)),pc(sm(4),tot)+'% del total','Participantes con discapacidad.','b')}</div>
+  <div class="grid lg:grid-cols-3 gap-4 mt-6">${cc('as_cp','Composición de participantes','h-72',false)}<div class="card p-4 md:p-5 lg:col-span-2"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h3 class="font-extrabold text-slate-800">Ranking por departamento — Top 15</h3><select id="ak" class="border border-slate-200 rounded-xl px-3 py-1.5 font-bold text-b">${AK.map(a=>`<option value="${a[0]}" ${a[0]==k?'selected':''}>${a[1]}</option>`).join('')}</select></div><div class="h-96 relative"><canvas id="c_as_rk"></canvas></div><p class="text-xs text-g mt-2">Toca una barra para ver el detalle del departamento.</p></div></div>
+  <div class="mt-4">${ib('Lectura rápida',`<b>${esc(top.d)}</b> concentra la mayor participación departamental con <b>${nf(top.t)}</b> personas (${pc(top.t,tot)}% del total). Las mujeres representan el <b>${pc(sm(0),tot)}%</b> y las personas LGBTIQ+ el <b>${pc(sm(5),tot)}%</b>. Se registran además <b>${nf(A.filter(x=>/nacional/i.test(x.d)).reduce((s,x)=>s+x.t,0))}</b> participantes en la categoría «Nacional».`)}</div>
+  ${sh('Tabla por departamento','table-properties')}<div class="card p-4"><div class="relative mb-3"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-3.5 text-g"></i><input id="as" value="${esc(AS.s)}" placeholder="Buscar departamento…" class="w-full border border-slate-200 rounded-2xl pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-b/40"></div><div id="al" class="overflow-x-auto max-h-[560px] overflow-y-auto">${alist()}</div></div>`;
+}
+function alist(){const q=AS.s.toLowerCase(),o=AS.o,A=DB.a.filter(x=>!q||x.d.toLowerCase().includes(q)).sort((a,b)=>o=='d'?a.d.localeCompare(b.d):val(b,o)-val(a,o));
+  return `<table class="w-full text-sm min-w-[640px]"><thead class="sticky top-0 bg-white"><tr class="text-left text-g">${[['d','Departamento'],...AK.map(a=>[a[0],a[1]])].map(c=>`<th class="py-2 px-2 cursor-pointer font-extrabold ${AS.o==c[0]?'text-o':''}" data-a="so" data-id="${c[0]}">${c[1]}${AS.o==c[0]?' ▾':''}</th>`).join('')}</tr></thead><tbody>${A.map(x=>`<tr data-m="a:${esc(x.d)}" class="border-t border-slate-100 hover:bg-o/5 cursor-pointer"><td class="py-2 px-2 font-bold text-slate-700">${esc(x.d)}</td><td class="px-2 font-black text-b">${nf(x.t)}</td>${x.v.map(v=>`<td class="px-2">${nf(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+function aModal(d){const x=DB.a.find(y=>y.d==d);if(!x)return;const L=AK.slice(1).map(a=>a[1]);openM(`<div class="text-sm font-extrabold text-g">Asamblea Nacional de Juventudes 2025</div><h3 class="text-2xl font-black text-b">${esc(x.d)}</h3><div class="text-4xl font-black text-o mt-1">${nf(x.t)} <span class="text-base text-g font-bold">participantes</span></div><div class="mt-4 space-y-3">${x.v.map((v,i)=>`<div><div class="flex justify-between text-sm font-bold"><span>${L[i]}</span><span>${nf(v)} · ${pc(v,x.t)}%</span></div><div class="bar ${i%2?'bl':''}"><i style="width:${pc(v,x.t)}%"></i></div></div>`).join('')}</div>`)}
+
+function grad(){
+  const G=DB.g,R=fr('grad',G.r),n=R.length,m=(i)=>avg(R.map(r=>+r[i]||0)),pre=[23,24,25,26,27,28].map(m),post=[29,30,31,32,33,34].map(m),sat=[35,36,37,38,39,40].map(m);
+  const IT=['Conocimiento de la Ley de Ciudadanía Juvenil','Conocimiento de procesos de incidencia','Metodologías de participación','Preparación para liderar incidencia','Preparación para participar en política pública','Preparación para liderar iniciativas'],ST=['Pertinencia de contenidos','Facilitadores','Tiempos de formación','Calidad de contenidos','Metodología','Cumplimiento de expectativas'];
+  POST.push(()=>{SP.grad.forEach(s=>draw('grad',s,R));bars('grad_cmp',IT,[{l:'Antes del curso',d:pre.map(v=>+v.toFixed(2)),c:P[0],h:HV[0]},{l:'Después del curso',d:post.map(v=>+v.toFixed(2)),c:P[1],h:HV[1]}],5);bars('grad_sat',ST,[{l:'Promedio (0–5)',d:sat.map(v=>+v.toFixed(2)),c:P[2],h:HV[2]}],5)});
+  const gain=IT.map((l,i)=>[l,post[i]-pre[i],pre[i],post[i]]).sort((a,b)=>b[1]-a[1]),exp=R.filter(r=>+r[40]>=4).length,rural=R.filter(r=>/rural/i.test(r[8])).length;
+  return hd('Juventudes que Mueven el Territorio – Curso Virtual – UNFPA – Universidad del Rosario',3,'Perfil de las personas graduadas, aprendizajes (antes y después) y satisfacción con la formación.')+chips('grad')+
+  (n?`<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">${kp('graduation-cap','Jóvenes graduados(as)',nf(n),'según filtros activos','Personas que completaron el curso virtual y respondieron el diagnóstico inicial y final.')}${kp('trending-up','Mejora promedio','+'+(avg(post)-avg(pre)).toFixed(1),'puntos en escala 0–5','Diferencia entre el promedio posterior ('+avg(post).toFixed(2)+') y el previo ('+avg(pre).toFixed(2)+') en los seis ítems de conocimiento y preparación.','b')}${kp('star','Satisfacción',avg(sat).toFixed(1)+'/5','seis dimensiones','Promedio de pertinencia, facilitadores, tiempos, calidad, metodología y cumplimiento de expectativas.')}${kp('smile','Expectativas cumplidas',pc(exp,n)+'%','calificaron 4 o 5','Personas que calificaron con 4 o 5 el cumplimiento de sus expectativas.','b')}${kp('venus-and-mars','Mujeres',pc(R.filter(r=>r[2]=='Mujer').length,n)+'%','','Participantes con sexo registrado «Mujer».')}${kp('sprout','Zona rural',pc(rural,n)+'%',nf(rural)+' personas','Personas que residen en área rural.','b')}${kp('globe','Enfoque étnico',pc(R.filter(r=>!/ninguno/i.test(r[4])).length,n)+'%','','Personas que se identifican con algún grupo étnico.')}${kp('map-pin','Departamentos',new Set(R.map(r=>r[6])).size,'con graduados(as)','Cantidad de departamentos de residencia representados.','b')}</div>
+  <div class="mt-4">${ib('Lectura rápida',`El mayor avance se observa en «<b>${gain[0][0]}</b>»: de <b>${gain[0][2].toFixed(1)}</b> a <b>${gain[0][3].toFixed(1)}</b> sobre 5. Le sigue «${gain[1][0]}» (+${gain[1][1].toFixed(1)}). El <b>${pc(exp,n)}%</b> de las personas calificó con 4 o 5 que se cumplieron sus expectativas del curso y la dimensión mejor valorada fue «${ST[sat.indexOf(Math.max(...sat))]}» (${Math.max(...sat).toFixed(1)}/5).`)}</div>
+  ${sh('Aprendizaje y satisfacción','sparkles')}<div class="grid lg:grid-cols-2 gap-4">${cc('grad_cmp','Conocimiento y preparación: antes vs. después (0–5)','h-96',false)}${cc('grad_sat','Satisfacción con la formación (0–5)','h-96',false)}</div>
+  ${sh('Perfil de las personas graduadas','users')}<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">${grid('grad',R,['sx','gn','ed','et','df','ar','nv','dp','og'])}</div>`:'<p class="mt-6 text-g">No hay registros con los filtros actuales.</p>');
+}
+
+function enl(){
+  const R=fr('enl',DB.e),n=R.length,ed=R.map(r=>r[2]).filter(Boolean),t1=R.filter(r=>/1/.test(r[7])).length,t2=R.filter(r=>/2/.test(r[7])).length,mj=R.filter(r=>r[3]=='Mujer').length,top=count(R,SP.enl[5])[0];
+  return hd('Actividades Virtuales – Enlaces Municipales',4,'Participación de enlaces departamentales y municipales de juventud en los talleres virtuales.')+chips('enl')+
+  (n?`<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">${kp('users','Participantes',nf(n),'registros','Registros de enlaces según los filtros activos.')}${kp('venus','Mujeres',pc(mj,n)+'%',nf(mj)+' personas','Participantes con sexo «Mujer».','b')}${kp('cake','Edad promedio',nf(avg(ed)),'años','Edad promedio de las personas participantes; rango: '+Math.min(...ed)+' a '+Math.max(...ed)+' años.')}${kp('map-pin','Departamentos',new Set(R.map(r=>r[0])).size,nf(new Set(R.map(r=>r[1])).size)+' municipios','Departamentos y municipios o distritos representados.','b')}${kp('calendar-days','Taller N° 1',nf(t1),'18 de junio','Registros asociados al taller N° 1 del 18 de junio.')}${kp('calendar-check','Taller N° 2',nf(t2),'23 de junio','Registros asociados al taller N° 2 del 23 de junio.','b')}${kp('globe','Enfoque étnico',pc(R.filter(r=>r[5]!='Ninguno').length,n)+'%','','Participantes que se identifican con un grupo étnico.')}${kp('accessibility','Diversidad funcional',R.filter(r=>r[6]!='Ninguna').length,'con discapacidad o sin respuesta','Registros con alguna discapacidad o «prefiero no responder».','b')}</div>
+  <div class="mt-4">${ib('Lectura rápida',`Participaron <b>${nf(n)}</b> enlaces de <b>${new Set(R.map(r=>r[0])).size}</b> departamentos. <b>${esc(top[0])}</b> aporta la mayor cantidad (${top[1]}). El <b>${pc(mj,n)}%</b> son mujeres y la edad promedio es de <b>${nf(avg(ed))}</b> años.`)}</div>
+  ${sh('Perfil de los participantes','users')}<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">${(POST.push(()=>{}),'')}${grid('enl',R,['sx','ed','et','df','tl','dp'])}</div>`:'<p class="mt-6 text-g">No hay registros con los filtros actuales.</p>');
+}
+
+function pos(){
+  const R=fr('pos',DB.p.r),n=R.length;if(!n)return hd('Percepciones Evento de Posesión – Consejo Nacional de Juventudes 2026',5,'')+chips('pos')+'<p class="mt-6 text-g">No hay registros con los filtros actuales.</p>';
+  const lk=i=>LK.map(l=>pc(R.filter(r=>cl(r[i]).toLowerCase()==l.toLowerCase()).length,n)),cf=[44,45,46].map(i=>pc(R.filter(r=>ok(r[i])).length,n)),prev=pc(R.filter(r=>ok(r[26])).length,n),bajo=pc(R.filter(r=>/bajo/i.test(r[25])).length,n);
+  POST.push(()=>{SP.pos.forEach(s=>draw('pos',s,R));bars('pos_lk',['Claridad sobre mi rol','Contenidos fortalecieron mis capacidades','Construcción de redes'],LK.map((l,k)=>({l,d:[44,45,46].map(i=>lk(i)[k]),c:['#9CC3F7','#C9DDFA','#E6E6E6','#F8CDB6','#F1A27C'][k],h:['#2475EE','#7FAEF2','#a2a2a2','#F1A27C','#F16122'][k]})),100,true,true);qfill()});
+  return hd('Percepciones Evento de Posesión – Consejo Nacional de Juventudes 2026',5,'Expectativas antes del evento y valoración después: aprendizajes, redes y compromisos de las personas consejeras.')+chips('pos')+
+  `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">${kp('users','Consejeros(as)',n,'respondieron la encuesta','Personas del Consejo Nacional de Juventudes que respondieron la encuesta antes y después de la posesión.')}${kp('compass','Mayor claridad de rol',cf[0]+'%','de acuerdo o totalmente','Porcentaje que está de acuerdo o totalmente de acuerdo con tener mayor claridad sobre su rol tras el evento.','b')}${kp('dumbbell','Capacidades fortalecidas',cf[1]+'%','de acuerdo o totalmente','Porcentaje que considera que los contenidos fortalecieron sus capacidades de representación.')}${kp('network','Construcción de redes',cf[2]+'%','de acuerdo o totalmente','Porcentaje que considera que el evento favoreció redes con jóvenes de otros territorios.','b')}</div>
+  <div class="mt-4">${ib('Lectura rápida',`Antes del encuentro el <b>${bajo}%</b> calificaba su conocimiento del CNJ como bajo o muy bajo y solo el <b>${prev}%</b> se sentía preparado(a) para representar a sus territorios. Después, el <b>${cf[0]}%</b> manifiesta mayor claridad sobre su rol y el <b>${cf[1]}%</b> siente fortalecidas sus capacidades.`)}</div>
+  ${sh('Valoración posterior al evento','message-square-heart')}<div class="grid lg:grid-cols-2 gap-4">${cc('pos_lk','Acuerdo con las afirmaciones (% de personas)','h-80',false)}${cc('pos_kp','Conocimiento previo del CNJ')}</div>
+  ${sh('Perfil y expectativas','users')}<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">${grid('pos',R,['sx','ed','et','dp','ap','te','as','cf']).replace(cc('pos_kp','Conocimiento previo del CNJ'),'')}</div>
+  ${sh('Voces de las personas consejeras','quote')}<div class="relative mb-3"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-3.5 text-g"></i><input id="q" value="${esc(AS.q)}" placeholder="Buscar en compromisos y expectativas…" class="w-full border border-slate-200 rounded-2xl pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-b/40"></div><div id="ql" class="grid lg:grid-cols-2 gap-4"></div>`;
+}
+function qfill(){const q=AS.q.toLowerCase(),R=fr('pos',DB.p.r);QL=[];
+  const box=(i,t,ico,c)=>{const a=R.map(r=>({d:tc(r[0]),m:tc(r[1]),x:String(r[i]).trim()})).filter(o=>o.x&&!/^ninguna?\.?$/i.test(o.x)&&(!q||(o.x+o.m+o.d).toLowerCase().includes(q)));
+    return `<div class="card p-4 md:p-5"><div class="flex items-center gap-2 font-extrabold ${c=='o'?'text-o':'text-b'} mb-3"><i data-lucide="${ico}" class="w-5 h-5"></i>${t} <span class="pill ${c=='o'?'':'b'}">${a.length}</span></div><div class="space-y-3 max-h-[460px] overflow-y-auto pr-1">${a.map(o=>{QL.push({t,...o});return `<button data-m="q:${QL.length-1}" class="block w-full text-left rounded-2xl p-3 bg-${c=='o'?'o':'b'}/5 hover:bg-${c=='o'?'o':'b'}/10"><span class="block text-[15px] leading-snug text-slate-700 line-clamp-3">“${esc(o.x)}”</span><span class="block text-xs font-extrabold text-g mt-1.5">${esc(o.m)}, ${esc(o.d)}</span></button>`}).join('')||'<p class="text-g text-sm">Sin resultados.</p>'}</div></div>`};
+  const el=$('#ql');if(el){el.innerHTML=box(47,'Compromisos en el territorio','flag','o')+box(27,'Expectativas frente al evento','sparkles','b');ic()}}
+
+/* ===== render y eventos ===== */
+function render(keep){
+  INST.forEach(c=>c.destroy());INST=[];KD=[];POST=[];clearInterval(TM);const y=scrollY,v=$('#view');
+  $('#navin').innerHTML=SECS.map(s=>`<button data-s="${s[0]}" class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full font-extrabold text-sm ${s[0]==sec?'bg-b text-white shadow-md shadow-b/30':'bg-slate-100 text-slate-600 hover:bg-b/10'}"><i data-lucide="${s[2]}" class="w-4 h-4"></i>${s[1]}</button>`).join('');
+  if(!DB){v.innerHTML=`<div class="card mt-10 p-10 text-center"><i data-lucide="file-spreadsheet" class="w-14 h-14 mx-auto text-o"></i><h2 class="mt-4 text-2xl font-black text-b">Carga el archivo tablero.xlsx</h2><p class="mt-2 text-slate-500 font-semibold">Si no se cargó automáticamente, pulsa «Cargar archivo Excel» y selecciona tu archivo.</p></div>`;ic();return}
+  v.innerHTML=({inicio,marco,asamblea,grad,enl,pos})[sec]();POST.forEach(f=>f());ic();scrollTo(0,keep?y:0);
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-s],[data-k],[data-a],[data-m]');if(e.target.id=='modal')return $('#modal').classList.remove('on');if(!t)return;
+  if(t.dataset.s){sec=t.dataset.s;location.hash=sec;return render()}
+  if(t.dataset.k!=null){const k=KD[t.dataset.k];return openM(`<div class="text-5xl font-black text-o">${k.v}</div><h3 class="text-xl font-black text-b mt-1">${k.l}</h3><p class="mt-3 leading-relaxed text-slate-600">${k.d}</p>`)}
+  if(t.dataset.m){const[a,b]=t.dataset.m.split(/:(.*)/s);if(a=='m')mModal(b);else if(a=='a')aModal(b);else{const o=QL[b];openM(`<div class="pill b">${esc(o.t)}</div><p class="mt-3 text-lg leading-relaxed text-slate-700">“${esc(o.x)}”</p><p class="mt-3 font-extrabold text-g">${esc(o.m)}, ${esc(o.d)}</p>`)}return}
+  const a=t.dataset.a,id=t.dataset.id;
+  if(a=='x')$('#modal').classList.remove('on');
+  else if(a=='ty'){const c=TYPE[id]||(INST.find(i=>i.canvas.id=='c_'+id)||{config:{}}).config.type,cur=TYPE[id]||SPT(id);TYPE[id]=TY[(TY.indexOf(cur)+1)%4];render(true)}
+  else if(a=='dl'){const cv=$('#c_'+id),l=document.createElement('a');l.href=cv.toDataURL('image/png');l.download=id+'.png';l.click()}
+  else if(a=='rm'){delete F[sec][id];render(true)}else if(a=='clr'){F[sec]={};render(true)}
+  else if(a=='so'){AS.o=id=='d'||id=='t'?id:+id;$('#al').innerHTML=alist()}
+  else if(a=='ph')openM(`<img src="foto${id}.jpg" alt="" class="w-full rounded-2xl">`);
+});
+const SPT=id=>{const[s,k]=id.split('_');const sp=(SP[s=='mr'?'mr':s]||[]).find(x=>x.id==k);return sp?sp.type:'bar'};
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.id=='ms'){AS.m=t.value;$('#ml').innerHTML=mlist();ic()}else if(t.id=='as'){AS.s=t.value;$('#al').innerHTML=alist()}else if(t.id=='q'){AS.q=t.value;qfill()}});
+document.addEventListener('change',e=>{if(e.target.id=='ak'){AS.k=e.target.value=='t'?'t':+e.target.value;render(true)}});
+addEventListener('keydown',e=>{if(e.key=='Escape')$('#modal').classList.remove('on')});
+addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(SECS.some(s=>s[0]==h)&&h!=sec){sec=h;render()}});
+(()=>{const h=location.hash.slice(1);if(SECS.some(s=>s[0]==h))sec=h})();
+window.addEventListener('load',()=>{ic();boot()});
+</script>
+</body>
+</html>
